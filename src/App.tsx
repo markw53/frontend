@@ -1,25 +1,35 @@
 import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
+
+// Placeholder components (we'll create these later)
+const Home = () => <div>Home Page</div>;
+const EventList = () => <div>Event List Page</div>;
+const EventDetail = () => <div>Event Detail Page</div>;
+const Login = () => <div>Login Page</div>;
+const Register = () => <div>Register Page</div>;
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <header className="App-header">
+          <h1>Community Events Platform</h1>
+        </header>
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/events" element={<EventList />} />
+            <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Routes>
+        </main>
+        <footer>
+          <p>© {new Date().getFullYear()} Community Events Platform</p>
+        </footer>
+      </div>
+    </Router>
   );
 }
 
