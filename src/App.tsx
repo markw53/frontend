@@ -6,16 +6,14 @@ import { AuthProvider } from './contexts/AuthContext';
 // Import components
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
-//import EventList from './pages/EventList'; // You'll need to create this
-//import EventDetail from './pages/EventDetail'; // You'll need to create this
+import EventList from './pages/EventList';
+import EventDetail from './pages/EventDetail';
+import EventForm from './pages/EventForm';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
 import PrivateRoute from './components/PrivateRoute';
-
-// Placeholder for EventList and EventDetail until we create them
-const EventListPlaceholder = () => <div>Event List Page (Coming Soon)</div>;
-const EventDetailPlaceholder = () => <div>Event Detail Page (Coming Soon)</div>;
 
 function App() {
   return (
@@ -27,8 +25,24 @@ function App() {
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/events" element={<EventListPlaceholder />} />
-              <Route path="/events/:id" element={<EventDetailPlaceholder />} />
+              <Route path="/events" element={<EventList />} />
+              <Route path="/events/:id" element={<EventDetail />} />
+              <Route 
+                path="/events/create" 
+                element={
+                  <PrivateRoute>
+                    <EventForm />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/events/edit/:id" 
+                element={
+                  <PrivateRoute>
+                    <EventForm />
+                  </PrivateRoute>
+                } 
+              />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route 
@@ -39,6 +53,7 @@ function App() {
                   </PrivateRoute>
                 } 
               />
+              <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
             </Routes>
           </main>
           
