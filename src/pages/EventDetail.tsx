@@ -87,11 +87,15 @@ const EventDetail: React.FC = () => {
       </div>
 
       <div className="event-detail-content">
-        {event.imageUrl && (
+        {event.imageUrl ? (
           <div className="event-detail-image">
             <img src={event.imageUrl} alt={event.title} />
           </div>
-        )}
+        ) : (
+          <div className="event-detail-image no-image">
+            <div className="placeholder-text">No image available</div>
+          </div>
+      )}
 
         <div className="event-detail-info">
           <div className="info-item">

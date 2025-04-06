@@ -71,34 +71,35 @@ const EventList: React.FC = () => {
         <div className="event-grid">
           {events.map((event) => (
             <div key={event.id} className="event-card">
-              {event.imageUrl && (
-                <div className="event-image">
-                  <img src={event.imageUrl} alt={event.title} />
-                </div>
-              )}
-              <div className="event-content">
-                <h3>{event.title}</h3>
-                <p className="event-date">
-                  <strong>When:</strong> {formatDate(event.startTime)}
-                </p>
-                <p className="event-location">
-                  <strong>Where:</strong> {event.location}
-                </p>
-                <p className="event-description">
-                  {event.description.length > 100
-                    ? `${event.description.substring(0, 100)}...`
-                    : event.description}
-                </p>
-                <div className="event-card-actions">
-                  <Link to={`/events/${event.id}`} className="btn btn-secondary">
-                    View Details
-                  </Link>
+              <div className="event-image">
+                <img 
+                  src={event.imageUrl || 'https://via.placeholder.com/300x180?text=No+Image'} 
+                  alt={event.title} 
+                />
+              </div>
+                <div className="event-content">
+                  <h3>{event.title}</h3>
+                  <p className="event-date">
+                    <strong>When:</strong> {formatDate(event.startTime)}
+                  </p>
+                  <p className="event-location">
+                    <strong>Where:</strong> {event.location}
+                  </p>
+                  <p className="event-description">
+                    {event.description.length > 100
+                      ? `${event.description.substring(0, 100)}...`
+                      : event.description}
+                  </p>
+                  <div className="event-card-actions">
+                    <Link to={`/events/${event.id}`} className="btn btn-secondary">
+                      View Details
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))} 
+          </div>
+        )}
       
       <div className="event-list-filters">
         {/* You can add filters here in the future */}
