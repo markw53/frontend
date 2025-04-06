@@ -3,31 +3,46 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './contexts/AuthContext';
 
-// Placeholder components (we'll create these later)
-const Home = () => <div>Home Page</div>;
-const EventList = () => <div>Event List Page</div>;
-const EventDetail = () => <div>Event Detail Page</div>;
-const Login = () => <div>Login Page</div>;
-const Register = () => <div>Register Page</div>;
+// Import components
+import Navigation from './components/Navigation';
+import Home from './pages/Home';
+//import EventList from './pages/EventList'; // You'll need to create this
+//import EventDetail from './pages/EventDetail'; // You'll need to create this
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile';
+import PrivateRoute from './components/PrivateRoute';
+
+// Placeholder for EventList and EventDetail until we create them
+const EventListPlaceholder = () => <div>Event List Page (Coming Soon)</div>;
+const EventDetailPlaceholder = () => <div>Event Detail Page (Coming Soon)</div>;
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <div className="App">
-          <header className="App-header">
-            <h1>Community Events Platform</h1>
-          </header>
-          <main>
+          <Navigation />
+          
+          <main className="main-content">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/events" element={<EventList />} />
-              <Route path="/events/:id" element={<EventDetail />} />
+              <Route path="/events" element={<EventListPlaceholder />} />
+              <Route path="/events/:id" element={<EventDetailPlaceholder />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route 
+                path="/profile" 
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                } 
+              />
             </Routes>
           </main>
-          <footer>
+          
+          <footer className="footer">
             <p>© {new Date().getFullYear()} Community Events Platform</p>
           </footer>
         </div>
