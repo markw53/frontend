@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { createEvent, getEventById, updateEvent } from '../services/api';
 import { EventFormData } from '../types/event';
 import { useAuth } from '../contexts/AuthContext';
+import ImageUpload from '../components/common/ImageUpload';
+import './EventForm.css';
 
 const EventForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,12 +18,15 @@ const EventForm: React.FC = () => {
     startTime: '',
     endTime: '',
     location: '',
-    imageUrl: ''
+    category: 'General', // Default category
+    imageUrl: '',
+    capacity: undefined
   });
   
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
+  const [imageUploading, setImageUploading] = useState<boolean>(false);
 
   useEffect(() => {
     // If we're in edit mode, fetch the event data
@@ -43,7 +48,9 @@ const EventForm: React.FC = () => {
             startTime: formatDateForInput(eventData.startTime),
             endTime: formatDateForInput(eventData.endTime),
             location: eventData.location,
-            imageUrl: eventData.imageUrl || ''
+            category: eventData.category || 'General',
+            imageUrl: eventData.imageUrl || '',
+            capacity: eventData.capacity
           });
           
           setError(null);
@@ -66,9 +73,17 @@ const EventForm: React.FC = () => {
     }
   }, [currentUser, navigate]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'capacity' ? (value ? parseInt(value) : undefined) : value 
+    }));
+  };
+
+  const handleImageUploaded = (imageUrl: string) => {
+    setFormData(prev => ({ ...prev, imageUrl }));
+    setImageUploading(false);
   };
 
   const validateForm = (): boolean => {
@@ -81,6 +96,12 @@ const EventForm: React.FC = () => {
     // Check if start time is in the future
     if (new Date(formData.startTime) < new Date()) {
       setError('Start time must be in the future');
+      return false;
+    }
+    
+    // Check if image upload is still in progress
+    if (imageUploading) {
+      setError('Please wait for image upload to complete');
       return false;
     }
     
@@ -123,6 +144,20 @@ const EventForm: React.FC = () => {
     return <div className="loading">Loading event data...</div>;
   }
 
+  // Available event categories
+  const categories = [
+    'General',
+    'Workshop',
+    'Conference',
+    'Meetup',
+    'Social',
+    'Sports',
+    'Arts',
+    'Education',
+    'Technology',
+    'Other'
+  ];
+
   return (
     <div className="event-form-container">
       <h1>{isEditMode ? 'Edit Event' : 'Create New Event'}</h1>
@@ -159,6 +194,25 @@ const EventForm: React.FC = () => {
           />
           {formSubmitted && !formData.description && (
             <div className="field-error">Description is required</div>
+          )}
+        </div>
+        
+        <div className="form-group">
+          <label htmlFor="category">Category*</label>
+          <select
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            required
+            className={formSubmitted && !formData.category ? 'invalid' : ''}
+          >
+            {categories.map(category => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+          {formSubmitted && !formData.category && (
+            <div className="field-error">Category is required</div>
           )}
         </div>
         
@@ -211,22 +265,40 @@ const EventForm: React.FC = () => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="imageUrl">Image URL (optional)</label>
+          <label htmlFor="capacity">Capacity (optional)</label>
           <input
-            type="url"
-            id="imageUrl"
-            name="imageUrl"
-            value={formData.imageUrl}
+            type="number"
+            id="capacity"
+            name="capacity"
+            value={formData.capacity || ''}
             onChange={handleChange}
-            placeholder="https://example.com/image.jpg"
+            min="1"
+            placeholder="Leave blank for unlimited"
           />
           <small className="form-text">
-            Provide a URL to an image for this event. Leave blank if none.
+            Maximum number of attendees. Leave blank for unlimited capacity.
+          </small>
+        </div>
+        
+        <div className="form-group">
+          <label>Event Image</label>
+          <ImageUpload 
+            onImageUploaded={handleImageUploaded}
+            currentImage={formData.imageUrl}
+            type="event"
+            onUploadStart={() => setImageUploading(true)}
+          />
+          <small className="form-text">
+            Upload an image for your event. Recommended size: 1200x630 pixels.
           </small>
         </div>
         
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={loading || imageUploading}
+          >
             {loading ? 'Saving...' : isEditMode ? 'Update Event' : 'Create Event'}
           </button>
           <button 

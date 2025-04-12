@@ -5,7 +5,8 @@ import {
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   updateProfile,
-  onAuthStateChanged
+  onAuthStateChanged,
+  getIdToken as firebaseGetIdToken
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { User, AuthContextType } from '../types/auth';
@@ -101,6 +102,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Get ID token function for authenticated requests
+  const getIdToken = async (): Promise<string> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      return await firebaseGetIdToken(auth.currentUser);
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -131,7 +146,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut,
     resetPassword,
-    updateUserProfile
+    updateUserProfile,
+    getIdToken // Add the new function to the context value
   };
 
   return (
