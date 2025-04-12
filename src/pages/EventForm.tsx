@@ -4,7 +4,19 @@ import { createEvent, getEventById, updateEvent } from '../services/api';
 import { EventFormData } from '../types/event';
 import { useAuth } from '../contexts/AuthContext';
 import ImageUpload from '../components/common/ImageUpload';
+import { EventCategory } from '../enums/EventCategory';
 import './EventForm.css';
+
+// Import EventTag from the shared types module
+import { EventTag } from '../types/event';
+
+// Create a runtime representation of EventTag
+const EventTagValues = Object.freeze({
+  TAG1: 'Tag1',
+  TAG2: 'Tag2',
+  TAG3: 'Tag3',
+  // Add all other tags here
+});
 
 const EventForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,9 +30,10 @@ const EventForm: React.FC = () => {
     startTime: '',
     endTime: '',
     location: '',
-    category: 'General', // Default category
+    category: EventCategory.GENERAL, // Use the enum value
     imageUrl: '',
-    capacity: undefined
+    capacity: undefined,
+    tags: [] // Add tags array
   });
   
   const [loading, setLoading] = useState<boolean>(false);
@@ -48,9 +61,10 @@ const EventForm: React.FC = () => {
             startTime: formatDateForInput(eventData.startTime),
             endTime: formatDateForInput(eventData.endTime),
             location: eventData.location,
-            category: eventData.category || 'General',
+            category: eventData.category || EventCategory.GENERAL,
             imageUrl: eventData.imageUrl || '',
-            capacity: eventData.capacity
+            capacity: eventData.capacity,
+            tags: eventData.tags || [] // Handle tags from existing event
           });
           
           setError(null);
@@ -79,6 +93,17 @@ const EventForm: React.FC = () => {
       ...prev, 
       [name]: name === 'capacity' ? (value ? parseInt(value) : undefined) : value 
     }));
+  };
+
+  const handleTagToggle = (tag: EventTag) => {
+    setFormData(prev => {
+      const currentTags = prev.tags || [];
+      if (currentTags.includes(tag)) {
+        return { ...prev, tags: currentTags.filter(t => t !== tag) };
+      } else {
+        return { ...prev, tags: [...currentTags, tag] };
+      }
+    });
   };
 
   const handleImageUploaded = (imageUrl: string) => {
@@ -144,20 +169,6 @@ const EventForm: React.FC = () => {
     return <div className="loading">Loading event data...</div>;
   }
 
-  // Available event categories
-  const categories = [
-    'General',
-    'Workshop',
-    'Conference',
-    'Meetup',
-    'Social',
-    'Sports',
-    'Arts',
-    'Education',
-    'Technology',
-    'Other'
-  ];
-
   return (
     <div className="event-form-container">
       <h1>{isEditMode ? 'Edit Event' : 'Create New Event'}</h1>
@@ -207,13 +218,41 @@ const EventForm: React.FC = () => {
             required
             className={formSubmitted && !formData.category ? 'invalid' : ''}
           >
-            {categories.map(category => (
+            {Object.values(EventCategory).map(category => (
               <option key={category} value={category}>{category}</option>
             ))}
           </select>
-          {formSubmitted && !formData.category && (
-            <div className="field-error">Category is required</div>
-          )}
+            {formSubmitted && !formData.category && (
+              <div className="field-error">Category is required</div>
+            )}
+            {Object.values(EventCategory).map((category: EventCategory) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+        </div>
+        
+        {/* New Tags Section */}
+        <div className="form-group">
+          <label>Event Tags</label>
+          <div className="tags-container">
+            {Object.values(EventTagValues).map(tag => (
+              <div key={tag} className="tag-option">
+                <input
+                  type="checkbox"
+                  id={`tag-${tag}`}
+                  checked={formData.tags?.includes(tag as EventTag) || false}
+                  onChange={() => {
+                    if (Object.values(EventTagValues).includes(tag)) {
+                      handleTagToggle(tag as EventTag);
+                    }
+                  }}
+                />
+                <label htmlFor={`tag-${tag}`}>{tag}</label>
+              </div>
+            ))}
+          </div>
+          <small className="form-text">
+            Select tags that describe your event. These help attendees find your event.
+          </small>
         </div>
         
         <div className="form-group">

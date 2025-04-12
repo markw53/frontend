@@ -11,9 +11,15 @@ export interface Event {
   category: string;
   imageUrl?: string;
   capacity?: number;
+  tags?: EventTag[];
   attendees: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface EventTag {
+  id: string;
+  name: string;
 }
 
 export interface EventFormData {
@@ -25,4 +31,5 @@ export interface EventFormData {
   category: string;
   imageUrl?: string;
   capacity?: number;
+  tags: EventTag[];
 }

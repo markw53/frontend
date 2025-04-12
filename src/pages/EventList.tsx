@@ -3,12 +3,21 @@ import { Link } from 'react-router-dom';
 import { getEvents } from '../services/api';
 import { Event } from '../types/event';
 import { useAuth } from '../contexts/AuthContext';
+import { EventCategory } from '../enums/EventCategory';
+import { EventTag } from '../enums/EventTag';
+import { formatDate } from '../utils/dateUtils';
+import './EventList.css';
 
 const EventList: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
+  
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -39,6 +48,39 @@ const EventList: React.FC = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const handleCategoryChange = (category: string | null) => {
+    setSelectedCategory(category);
+  };
+
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : [...prev, tag]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSelectedCategory(null);
+    setSelectedTags([]);
+  };
+
+  // Filter events based on selected category and tags
+  const filteredEvents = events.filter(event => {
+    // Filter by category
+    if (selectedCategory && event.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Filter by tags - only show events that have ALL selected tags
+    if (selectedTags.length > 0) {
+      if (!event.tags) return false;
+      return selectedTags.every(tag => event.tags?.includes(tag));
+    }
+    
+    return true;
+  });
+
   if (loading) {
     return <div className="loading">Loading events...</div>;
   }
@@ -51,25 +93,116 @@ const EventList: React.FC = () => {
     <div className="event-list-container">
       <div className="event-list-header">
         <h1>Community Events</h1>
-        {currentUser?.role === 'staff' && (
-          <Link to="/events/create" className="btn btn-primary">
-            Create New Event
-          </Link>
-        )}
-      </div>
-
-      {events.length === 0 ? (
-        <div className="no-events">
-          <p>No events found. Check back later for upcoming events!</p>
+        <div className="event-list-actions">
+          <button 
+            className="btn btn-secondary"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            {showFilters ? 'Hide Filters' : 'Show Filters'}
+          </button>
           {currentUser?.role === 'staff' && (
             <Link to="/events/create" className="btn btn-primary">
-              Create the first event
+              Create New Event
             </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Filters Section */}
+      {showFilters && (
+        <div className="event-filters">
+          <div className="filter-section">
+            <h3>Filter by Category</h3>
+            <div className="category-filters">
+              <button
+                className={`filter-btn ${selectedCategory === null ? 'active' : ''}`}
+                onClick={() => handleCategoryChange(null)}
+              >
+                All Categories
+              </button>
+              {Object.values(EventCategory).map(category => (
+                <button
+                  key={category}
+                  className={`filter-btn ${selectedCategory === category ? 'active' : ''}`}
+                  onClick={() => handleCategoryChange(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-section">
+            <h3>Filter by Tags</h3>
+            <div className="tag-filters">
+              {Object.values(EventTag).map(tag => (
+                <button
+                  key={tag}
+                  className={`filter-btn ${selectedTags.includes(tag) ? 'active' : ''}`}
+                  onClick={() => handleTagToggle(tag)}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(selectedCategory || selectedTags.length > 0) && (
+            <button 
+              className="clear-filters-btn"
+              onClick={clearAllFilters}
+            >
+              Clear All Filters
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Active Filters Display */}
+      {(selectedCategory || selectedTags.length > 0) && (
+        <div className="active-filters">
+          <span>Active Filters:</span>
+          {selectedCategory && (
+            <span className="filter-tag">
+              {selectedCategory}
+              <button onClick={() => setSelectedCategory(null)}>×</button>
+            </span>
+          )}
+          {selectedTags.map(tag => (
+            <span key={tag} className="filter-tag">
+              {tag}
+              <button onClick={() => handleTagToggle(tag)}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {filteredEvents.length === 0 ? (
+        <div className="no-events">
+          {selectedCategory || selectedTags.length > 0 ? (
+            <>
+              <p>No events found matching your filters.</p>
+              <button 
+                className="btn btn-secondary"
+                onClick={clearAllFilters}
+              >
+                Clear All Filters
+              </button>
+            </>
+          ) : (
+            <>
+              <p>No events found. Check back later for upcoming events!</p>
+              {currentUser?.role === 'staff' && (
+                <Link to="/events/create" className="btn btn-primary">
+                  Create the first event
+                </Link>
+              )}
+            </>
           )}
         </div>
       ) : (
         <div className="event-grid">
-          {events.map((event) => (
+          {filteredEvents.map((event) => (
             <div key={event.id} className="event-card">
               <div className="event-image">
                 <img 
@@ -77,33 +210,39 @@ const EventList: React.FC = () => {
                   alt={event.title} 
                 />
               </div>
-                <div className="event-content">
-                  <h3>{event.title}</h3>
-                  <p className="event-date">
-                    <strong>When:</strong> {formatDate(event.startTime)}
-                  </p>
-                  <p className="event-location">
-                    <strong>Where:</strong> {event.location}
-                  </p>
-                  <p className="event-description">
-                    {event.description.length > 100
-                      ? `${event.description.substring(0, 100)}...`
-                      : event.description}
-                  </p>
-                  <div className="event-card-actions">
-                    <Link to={`/events/${event.id}`} className="btn btn-secondary">
-                      View Details
-                    </Link>
+              <div className="event-content">
+                <h3>{event.title}</h3>
+                <p className="event-date">
+                  <strong>When:</strong> {formatDate(event.startTime)}
+                </p>
+                <p className="event-location">
+                  <strong>Where:</strong> {event.location}
+                </p>
+                <div className="event-category">
+                  <span className="category-badge">{event.category}</span>
+                </div>
+                {event.tags && event.tags.length > 0 && (
+                  <div className="event-tags">
+                    {event.tags.map(tag => (
+                      <span key={tag} className="tag-badge">{tag}</span>
+                    ))}
                   </div>
+                )}
+                <p className="event-description">
+                  {event.description.length > 100
+                    ? `${event.description.substring(0, 100)}...`
+                    : event.description}
+                </p>
+                <div className="event-card-actions">
+                  <Link to={`/events/${event.id}`} className="btn btn-secondary">
+                    View Details
+                  </Link>
                 </div>
               </div>
-            ))} 
-          </div>
-        )}
-      
-      <div className="event-list-filters">
-        {/* You can add filters here in the future */}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
