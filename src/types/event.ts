@@ -6,7 +6,8 @@ export interface Event {
   startTime: string;
   endTime: string;
   location: string;
-  organizer: string;
+  organiser: string;
+  organiserName?: string;
   category: string;
   imageUrl?: string;
   capacity?: number;

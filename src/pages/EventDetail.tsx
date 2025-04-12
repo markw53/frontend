@@ -121,7 +121,7 @@ const EventDetail: React.FC = () => {
       </div>
       
       <div className="event-detail-meta">
-        <p>Created by: {event.createdBy}</p>
+        <p>Created by: {event.organiserName || 'unknown'}</p>
         <p>Created: {formatDate(event.createdAt)}</p>
         {event.updatedAt !== event.createdAt && (
           <p>Last updated: {formatDate(event.updatedAt)}</p>

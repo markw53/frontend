@@ -4,6 +4,26 @@ import { EventFormData, Event } from '../types/event';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+// Process event data to ensure it matches the Event interface
+const processEventData = (data: any): Event => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    startTime: data.startTime || data.startDate,
+    endTime: data.endTime || data.endDate,
+    location: data.location,
+    organiser: data.organiser || data.createdBy, // Handle different field names
+    organiserName: data.organiserName || 'Unknown', // Add organizer name if available
+    category: data.category || 'General',
+    imageUrl: data.imageUrl,
+    capacity: data.capacity,
+    attendees: data.attendees || [],
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt
+  };
+};
+
 // Helper function to make authenticated requests
 const authFetch = async (endpoint: string, options: RequestInit = {}) => {
   try {
@@ -34,40 +54,44 @@ const authFetch = async (endpoint: string, options: RequestInit = {}) => {
 
 // Get all events
 export const getEvents = async (): Promise<Event[]> => {
-  return authFetch('/events');
+  const data = await authFetch('/events');
+  return Array.isArray(data) ? data.map(processEventData) : [];
 };
 
 // Get event by ID
 export const getEventById = async (id: string): Promise<Event> => {
-  return authFetch(`/events/${id}`);
+  const data = await authFetch(`/events/${id}`);
+  return processEventData(data);
 };
 
 // Create new event
 export const createEvent = async (eventData: EventFormData): Promise<Event> => {
-  return authFetch('/events', {
+  const data = await authFetch('/events', {
     method: 'POST',
     body: JSON.stringify(eventData)
   });
+  return processEventData(data);
 };
 
 // Update event
 export const updateEvent = async (id: string, eventData: EventFormData): Promise<Event> => {
-  return authFetch(`/events/${id}`, {
+  const data = await authFetch(`/events/${id}`, {
     method: 'PUT',
     body: JSON.stringify(eventData)
   });
+  return processEventData(data);
 };
 
 // Delete event
 export const deleteEvent = async (id: string): Promise<void> => {
-  return authFetch(`/events/${id}`, {
+  await authFetch(`/events/${id}`, {
     method: 'DELETE'
   });
 };
 
 // Register for an event
 export const registerForEvent = async (id: string): Promise<void> => {
-  return authFetch(`/events/${id}/register`, {
+  await authFetch(`/events/${id}/register`, {
     method: 'POST'
   });
 };
@@ -99,3 +123,16 @@ export const uploadImage = async (file: File, type: 'event' | 'profile'): Promis
     throw error;
   }
 };
+
+// Create a default export with all the API functions
+const api = {
+  getEvents,
+  getEventById,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  registerForEvent,
+  uploadImage
+};
+
+export default api;
