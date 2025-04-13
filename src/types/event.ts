@@ -1,4 +1,7 @@
 // src/types/event.ts
+import { EventTag } from '../enums/EventTag';
+import { EventCategory } from '../enums/EventCategory';
+
 export interface Event {
   id: string;
   title: string;
@@ -17,11 +20,6 @@ export interface Event {
   updatedAt: string;
 }
 
-export interface EventTag {
-  id: string;
-  name: string;
-}
-
 export interface EventFormData {
   title: string;
   description: string;
@@ -31,5 +29,5 @@ export interface EventFormData {
   category: string;
   imageUrl?: string;
   capacity?: number;
-  tags: EventTag[];
+  tags?: EventTag[];
 }

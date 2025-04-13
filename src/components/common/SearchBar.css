@@ -1,0 +1,59 @@
+/* src/components/common/SearchBar.css */
+.search-bar {
+    display: flex;
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .search-input {
+    flex: 1;
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  
+  .search-input:focus {
+    border-color: #4263eb;
+    box-shadow: 0 0 0 0.2rem rgba(66, 99, 235, 0.25);
+  }
+  
+  .search-clear-btn {
+    position: absolute;
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+  }
+  
+  .search-clear-btn:hover {
+    color: #343a40;
+  }
+  
+  .search-submit-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .search-submit-btn:hover {
+    color: #4263eb;
+  }

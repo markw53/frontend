@@ -11,3 +11,5 @@ export enum EventTag {
     BEGINNER_FRIENDLY = 'Beginner Friendly',
     ADVANCED = 'Advanced',
   }
+
+  

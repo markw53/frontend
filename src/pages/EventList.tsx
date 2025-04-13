@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { getEvents } from '../services/api';
 import { Event } from '../types/event';
 import { useAuth } from '../contexts/AuthContext';
-import { EventCategory } from '../enums/EventCategory';
-import { EventTag } from '../enums/EventTag';
+import { EventCategory, EventTag } from '../enums';
 import { formatDate } from '../utils/dateUtils';
+import SearchBar from '../components/common/SearchBar';
 import './EventList.css';
 
 const EventList: React.FC = () => {
@@ -16,7 +16,8 @@ const EventList: React.FC = () => {
   
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
   useEffect(() => {
@@ -37,45 +38,61 @@ const EventList: React.FC = () => {
     fetchEvents();
   }, []);
 
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  // const formatDate = (dateString: string) => {
+  //   const options: Intl.DateTimeFormatOptions = {
+  //     year: 'numeric',
+  //     month: 'long',
+  //     day: 'numeric',
+  //     hour: '2-digit',
+  //     minute: '2-digit'
+  //   };
+  //   return new Date(dateString).toLocaleDateString(undefined, options);
+  // };
 
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);
   };
 
-  const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag) 
-        : [...prev, tag]
-    );
+  const handleTagToggle = (tag: EventTag) => {
+      setSelectedTags(prev => 
+        prev.includes(tag) 
+          ? prev.filter(t => t !== tag) 
+          : [...prev, tag]
+      );
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
   };
 
   const clearAllFilters = () => {
     setSelectedCategory(null);
     setSelectedTags([]);
+    setSearchQuery('');
   };
 
-  // Filter events based on selected category and tags
+  // Filter and search events
   const filteredEvents = events.filter(event => {
-    // Filter by category
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        event.title.toLowerCase().includes(query) || 
+        event.description.toLowerCase().includes(query) ||
+        event.location.toLowerCase().includes(query);
+      
+      if (!matchesSearch) return false;
+    }
+    
+    // Category filter
     if (selectedCategory && event.category !== selectedCategory) {
       return false;
     }
     
-    // Filter by tags - only show events that have ALL selected tags
+    // Tags filter
     if (selectedTags.length > 0) {
       if (!event.tags) return false;
-      return selectedTags.every(tag => event.tags?.includes(tag));
+      return selectedTags.every((tag: EventTag) => event.tags?.includes(tag));
     }
     
     return true;
@@ -108,6 +125,15 @@ const EventList: React.FC = () => {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="search-container">
+        <SearchBar 
+          onSearch={handleSearch} 
+          initialValue={searchQuery}
+          placeholder="Search by title, description, or location..."
+        />
+      </div>
+
       {/* Filters Section */}
       {showFilters && (
         <div className="event-filters">
@@ -135,11 +161,11 @@ const EventList: React.FC = () => {
           <div className="filter-section">
             <h3>Filter by Tags</h3>
             <div className="tag-filters">
-              {Object.values(EventTag).map(tag => (
+              {['Tag1', 'Tag2', 'Tag3'].map(tag => (
                 <button
                   key={tag}
-                  className={`filter-btn ${selectedTags.includes(tag) ? 'active' : ''}`}
-                  onClick={() => handleTagToggle(tag)}
+                  className={`filter-btn ${selectedTags.includes(tag as EventTag) ? 'active' : ''}`}
+                  onClick={() => handleTagToggle(tag as EventTag)}
                 >
                   {tag}
                 </button>
@@ -159,9 +185,15 @@ const EventList: React.FC = () => {
       )}
 
       {/* Active Filters Display */}
-      {(selectedCategory || selectedTags.length > 0) && (
+      {(selectedCategory || selectedTags.length > 0 || searchQuery) && (
         <div className="active-filters">
           <span>Active Filters:</span>
+          {searchQuery && (
+            <span className="filter-tag">
+              Search: {searchQuery}
+              <button onClick={() => setSearchQuery('')}>×</button>
+            </span>
+          )}
           {selectedCategory && (
             <span className="filter-tag">
               {selectedCategory}
@@ -224,7 +256,7 @@ const EventList: React.FC = () => {
                 {event.tags && event.tags.length > 0 && (
                   <div className="event-tags">
                     {event.tags.map(tag => (
-                      <span key={tag} className="tag-badge">{tag}</span>
+                      <span key={String(tag)} className="tag-badge">{String(tag)}</span>
                     ))}
                   </div>
                 )}

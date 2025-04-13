@@ -4,11 +4,11 @@ import { createEvent, getEventById, updateEvent } from '../services/api';
 import { EventFormData } from '../types/event';
 import { useAuth } from '../contexts/AuthContext';
 import ImageUpload from '../components/common/ImageUpload';
-import { EventCategory } from '../enums/EventCategory';
+import { EventTag, EventCategory } from '../enums';
 import './EventForm.css';
 
 // Import EventTag from the shared types module
-import { EventTag } from '../types/event';
+// import { EventTag } from '../types/event';
 
 // Create a runtime representation of EventTag
 const EventTagValues = Object.freeze({
@@ -30,7 +30,7 @@ const EventForm: React.FC = () => {
     startTime: '',
     endTime: '',
     location: '',
-    category: EventCategory.GENERAL, // Use the enum value
+    category: 'General', // Use the enum value
     imageUrl: '',
     capacity: undefined,
     tags: [] // Add tags array
@@ -234,17 +234,13 @@ const EventForm: React.FC = () => {
         <div className="form-group">
           <label>Event Tags</label>
           <div className="tags-container">
-            {Object.values(EventTagValues).map(tag => (
+            {Object.values(EventTag).map(tag => (
               <div key={tag} className="tag-option">
                 <input
                   type="checkbox"
                   id={`tag-${tag}`}
-                  checked={formData.tags?.includes(tag as EventTag) || false}
-                  onChange={() => {
-                    if (Object.values(EventTagValues).includes(tag)) {
-                      handleTagToggle(tag as EventTag);
-                    }
-                  }}
+                  checked={formData.tags?.includes(tag) || false}
+                  onChange={() => handleTagToggle(tag)}
                 />
                 <label htmlFor={`tag-${tag}`}>{tag}</label>
               </div>

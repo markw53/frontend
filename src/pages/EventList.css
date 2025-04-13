@@ -272,3 +272,14 @@
       flex: 1;
     }
   }
+
+  .search-container {
+    margin-bottom: 1.5rem;
+    width: 100%;
+  }
+  
+  @media (min-width: 768px) {
+    .search-container {
+      max-width: 500px;
+    }
+  }
