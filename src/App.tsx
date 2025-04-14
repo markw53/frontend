@@ -14,6 +14,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
 import PrivateRoute from './components/PrivateRoute';
+import TestRecommendations from './components/TestRecommendations';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/events" element={<EventList />} />
               <Route path="/events/:id" element={<EventDetail />} />
+              <Route path="/test-recommendations" element={<TestRecommendations />} />
               <Route 
                 path="/events/create" 
                 element={
