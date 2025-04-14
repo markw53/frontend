@@ -9,7 +9,8 @@ import {
   getIdToken as firebaseGetIdToken
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { User, AuthContextType } from '../types/auth';
+import { AuthContextType } from '../types/auth';
+import { User } from '../types/user';
 
 // Create context with default values
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -124,10 +125,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // In a real app, you'd fetch the role from your database
         setCurrentUser({
           uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
+          email: user.email || '', // Handle null email
+          displayName: user.displayName || '', // Handle null displayName
           role: 'user', // Default role
-          photoURL: user.photoURL
+          photoURL: user.photoURL // photoURL can be null
         });
       } else {
         setCurrentUser(null);

@@ -15,6 +15,7 @@ const processEventData = (data: any): Event => {
     location: data.location,
     organiser: data.organiser || data.createdBy, // Handle different field names
     organiserName: data.organiserName || 'Unknown', // Add organizer name if available
+    name: data.name || data.title, // Add name property, defaulting to title if not available
     category: data.category || 'General',
     imageUrl: data.imageUrl,
     capacity: data.capacity,

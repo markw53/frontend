@@ -1,11 +1,6 @@
 // src/types/auth.ts
-export interface User {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  role: 'user' | 'staff' | 'admin';
-  photoURL: string | null;
-}
+import { User } from './user'; // Adjust the path to where the User type is defined
+
 
 export interface AuthContextType {
   currentUser: User | null;

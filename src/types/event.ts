@@ -18,6 +18,8 @@ export interface Event {
   attendees: string[];
   createdAt: string;
   updatedAt: string;
+  registrationCount?: number;
+  name: string;
 }
 
 export interface EventFormData {

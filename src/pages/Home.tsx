@@ -1,10 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getEvents } from '../services/api';
+import { Event } from '../types/event';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getRecommendedEvents, getPopularEvents } from '../services/recommendationService';
+import EventRecommendations from '../components/EventRecommendations';
+// import './Home.css';
 
 const Home: React.FC = () => {
   const { currentUser } = useAuth();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await getEvents();
+        setEvents(data);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }
+  , []);
+ 
   return (
     <div className="home-container">
       <section className="hero">
@@ -45,6 +68,23 @@ const Home: React.FC = () => {
         </div>
       </section>
       
+      <section className="events-list">
+        <h2>Upcoming Events</h2>
+        {loading ? (
+          <p>Loading events...</p>
+        ) : events.length > 0 ? (
+          <ul>
+            {events.map((event) => (
+              <li key={event.id}>
+                <Link to={`/events/${event.id}`}>{event.name}</Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No events available at the moment.</p>
+        )}
+      </section>
+
       {currentUser ? (
         <section className="welcome-back">
           <h2>Welcome back, {currentUser.displayName || 'User'}!</h2>
