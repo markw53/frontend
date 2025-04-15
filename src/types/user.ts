@@ -7,5 +7,9 @@ export interface User {
     photoURL?: string | null; // Optional and allow null
     interests?: string[];
     registeredEvents?: string[];
+    favoriteEvents?: string[];
+    notificationPreferences?: Record<string, boolean>;
+    createdAt?: string;
+    updatedAt?: string;
     // Add other user properties as needed
   }

@@ -11,10 +11,17 @@ const createDate = (daysFromNow: number, hours: number = 18): Date => {
   return date;
 };
 
+// Example usage of createDate
+const exampleDate = createDate(5); // Creates a date 5 days from now
+console.log('Example Date:', exampleDate);
+
 // Format date for event data
 const formatEventDate = (date: Date): string => {
   return date.toISOString();
 };
+
+// Example usage of formatEventDate
+console.log('Formatted Example Date:', formatEventDate(exampleDate));
 
 export const sampleEvents: Event[] = [
   // All your sample events as before

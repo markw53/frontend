@@ -1,4 +1,6 @@
 // src/services/recommendationService.ts
+import { getEvents, getEventById } from './eventService';
+import { getUserInterests, getUserRegisteredEvents } from './userService';
 import { Event } from '../types/event';
 import { User } from '../types/user';
 
@@ -189,4 +191,73 @@ export const getUpcomingEvents = (
   return upcomingEvents
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
     .slice(0, limit);
+};
+
+/**
+ * Get upcoming events within a specified time frame
+ * @param events All available events
+ * @param days Number of days to look ahead
+ * @param limit Maximum number of events to return
+ * @returns Array of upcoming events
+ */
+export const getRecommendedEventsForUser = async (
+  userId: string,
+  limit: number = 5
+): Promise<Event[]> => {
+  try {
+    // Get all events
+    const allEvents = await getEvents();
+    
+    // Get user data
+    const interests = await getUserInterests(userId);
+    const registeredEventIds = await getUserRegisteredEvents(userId);
+    
+    // Filter out events the user is already registered for
+    const availableEvents = allEvents.filter(
+      event => !registeredEventIds.includes(event.id)
+    );
+    
+    if (availableEvents.length === 0) {
+      return [];
+    }
+    
+    // Score and sort events based on user interests
+    const scoredEvents = availableEvents.map(event => {
+      let score = 0;
+      
+      // Score based on category match
+      if (interests.includes(event.category)) {
+        score += 3;
+      }
+      
+      // Score based on tag matches
+      if (event.tags) {
+        event.tags.forEach(tag => {
+          if (interests.includes(tag)) {
+            score += 2;
+          }
+        });
+      }
+      
+      // Boost score for upcoming events (within the next week)
+      const eventDate = new Date(event.startTime);
+      const now = new Date();
+      const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+      
+      if (eventDate > now && eventDate.getTime() - now.getTime() < oneWeek) {
+        score += 1;
+      }
+      
+      return { event, score };
+    });
+    
+    // Return top recommendations
+    return scoredEvents
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(item => item.event);
+  } catch (error) {
+    console.error('Error getting recommended events:', error);
+    throw error;
+  }
 };

@@ -24,12 +24,14 @@ const EventList: React.FC = () => {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const data = await getEvents();
-        setEvents(data);
         setError(null);
-      } catch (err) {
-        setError('Failed to load events. Please try again later.');
-        console.error(err);
+        console.log('Fetching events...');
+        const data = await getEvents();
+        console.log('Events fetched:', data);
+        setEvents(data);
+      } catch (err: any) {
+        console.error('Error in fetchEvents:', err);
+        setError(`Failed to load events: ${err.message || 'Unknown error'}`);
       } finally {
         setLoading(false);
       }
@@ -37,17 +39,6 @@ const EventList: React.FC = () => {
 
     fetchEvents();
   }, []);
-
-  // const formatDate = (dateString: string) => {
-  //   const options: Intl.DateTimeFormatOptions = {
-  //     year: 'numeric',
-  //     month: 'long',
-  //     day: 'numeric',
-  //     hour: '2-digit',
-  //     minute: '2-digit'
-  //   };
-  //   return new Date(dateString).toLocaleDateString(undefined, options);
-  // };
 
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);

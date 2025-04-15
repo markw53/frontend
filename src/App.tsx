@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import { AuthProvider } from './contexts/AuthContext';
+import { seedEvents } from './utils/seedDatabase';
 
 // Import components
 import Navigation from './components/Navigation';
@@ -15,6 +16,13 @@ import Profile from './pages/Profile';
 import GoogleAuthCallback from './pages/GoogleAuthCallback';
 import PrivateRoute from './components/PrivateRoute';
 import TestRecommendations from './components/TestRecommendations';
+
+if (process.env.NODE_ENV === 'development') {
+  // Seed the database with sample events
+  seedEvents()
+    .then((): void => console.log('Database seeded with sample events'))
+      .catch((error: Error): void => console.error('Error seeding database:', error));
+}
 
 function App() {
   return (
